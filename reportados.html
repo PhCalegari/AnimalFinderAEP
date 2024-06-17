@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Animal Finder - Itens Reportados</title>
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.6/build/pure-min.css">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Estilo para o formulário de endereço */
+    .address-form {
+      padding: 20px;
+    }
+    .address-form input, .address-form button, .address-form pre {
+      width: calc(100% - 22px); /* Largura total menos padding */
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* Estilo para a lista de reportados */
+    .reported-list {
+      margin-top: 20px;
+    }
+    .reported-list li {
+      margin-bottom: 10px;
+      padding: 10px;
+      background-color: #e0f7fa; /* Cor de fundo verde mais clara */
+      border-left: 5px solid #00796b; /* Cor verde principal */
+    }
+    .reported-list li pre {
+      white-space: pre-wrap;
+    }
+
+    /* Estilo para o cabeçalho */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background-color: #00796b; /* Cor verde principal */
+      color: white;
+    }
+    .logo-container {
+      display: flex;
+      align-items: center;
+    }
+    .logo {
+      height: 50px;
+      margin-right: 10px;
+    }
+    .title-text {
+      font-size: 1.5em;
+      font-weight: bold;
+    }
+    .user {
+      font-weight: bold;
+    }
+    .menu-button {
+      background-color: #00796b; /* Cor verde principal */
+      color: white;
+    }
+    .menu-button:hover {
+      background-color: #004d40; /* Cor verde mais escura ao passar o mouse */
+    }
+
+    /* Estilos para os modais */
+    .modal {
+      display: none; /* Oculta por padrão */
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4); /* Fundo semi-transparente */
+    }
+    .modal-content {
+      background-color: #fefefe;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 400px;
+      border-radius: 10px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Estilo para os botões de ação */
+    .edit-button, .delete-button, .update-status-button, .adopt-button {
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="pure-g">
+    <div class="pure-u-1 header">
+      <div class="pure-u-1-3 logo-container">
+        <img src="logo.png" alt="Logo" class="logo">
+        <span class="title-text">ANIMAL FINDER</span>
+      </div>
+      <div class="pure-u-1-3 user" id="userSection">
+        <span id="loggedInUser"></span>
+        <button class="pure-button" onclick="openModal('loginModal')">Login</button>
+      </div>
+    </div>
+    <div class="pure-u-1 menu">
+      <a href="index.html" class="pure-button menu-button">Reportar</a>
+      <a href="reportados.html" class="pure-button menu-button">Reportados</a>
+      <a href="adotar.html" class="pure-button menu-button">Adotar</a>
+      <button class="pure-button menu-button" id="logout" style="display: none;" onclick="logout()">Logout</button>
+      <button class="pure-button menu-button" id="login" style="display: none;" onclick="openModal('loginModal')">Login</button>
+      <button class="pure-button menu-button" id="register" style="display: none;" onclick="openModal('registerModal')">Registrar</button>
+    </div>
+    <div class="pure-u-1 reported-list" id="reported-list">
+      <!-- Lista de itens reportados será adicionada aqui -->
+    </div>
+  </div>
+
+  <!-- Modal de Login -->
+  <div id="loginModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Login</h2>
+      <form id="loginForm">
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" required>
+        <br><br>
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+        <br><br>
+        <button type="submit" class="pure-button pure-button-primary">Entrar</button>
+        <p>Não possui login? <a href="#" onclick="openModal('registerModal')">Registre-se</a></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal de Registro -->
+  <div id="registerModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Registrar</h2>
+      <form id="registerForm">
+        <label for="newUsername">Novo Usuário:</label>
+        <input type="text" id="newUsername" name="newUsername" required>
+        <br><br>
+        <label for="newPassword">Nova Senha:</label>
+        <input type="password" id="newPassword" name="newPassword" required>
+        <br><br>
+        <button type="submit" class="pure-button pure-button-primary">Registrar</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Modal de Login e Registro
+    var modal = document.getElementById('loginModal');
+    var registerModal = document.getElementById('registerModal');
+  
+    function openModal(modalId) {
+      if (modalId === 'loginModal') {
+        modal.style.display = "block";
+        registerModal.style.display = "none";
+      } else if (modalId === 'registerModal') {
+        registerModal.style.display = "block";
+        modal.style.display = "none";
+      }
+    }
+  
+    function closeModal() {
+      modal.style.display = "none";
+      registerModal.style.display = "none";
+    }
+  
+    window.onclick = function(event) {
+      if (event.target == modal || event.target == registerModal) {
+        closeModal();
+      }
+    }
+  
+    // Função de Login
+    function login(event) {
+      event.preventDefault(); // Evita o envio padrão do formulário
+      
+      var username = document.getElementById('username').value.trim();
+      var password = document.getElementById('password').value.trim();
+  
+      var users = JSON.parse(localStorage.getItem('users')) || [];
+      // Verifica se o usuário e senha correspondem a algum usuário registrado
+      var loggedInUser = users.find(user => user.username === username && user.password === password);
+  
+      if (loggedInUser) {
+        localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+        closeModal();
+        checkLoggedInUser(); // Chama a função para atualizar a interface
+        alert('Login realizado com sucesso!');
+      } else {
+        alert('Usuário ou senha incorretos.');
+      }
+    }
+  
+    // Função de Registro
+    function register(event) {
+      event.preventDefault();
+      var newUsername = document.getElementById('newUsername').value.trim();
+      var newPassword = document.getElementById('newPassword').value.trim();
+  
+      var users = JSON.parse(localStorage.getItem('users')) || [];
+      // Verifica se o usuário já existe
+      var existingUser = users.find(user => user.username === newUsername);
+  
+      if (existingUser) {
+        alert('Usuário já existe. Por favor, escolha outro nome de usuário.');
+      } else {
+        // Registra o novo usuário
+        var newUser = {
+          username: newUsername,
+          password: newPassword
+        };
+        users.push(newUser);
+        localStorage.setItem('users', JSON.stringify(users));
+        closeModal();
+        alert('Usuário registrado com sucesso! Faça o login.');
+      }
+    }
+  
+    // Função de Logout
+    function logout() {
+      localStorage.removeItem('loggedInUser');
+      checkLoggedInUser();
+      location.reload(); // Atualiza a página após o logout
+    }
+  
+    // Verificar se há usuário logado ao carregar a página
+   
+    function checkLoggedInUser() {
+      var loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+      var loginButton = document.getElementById('login');
+      var registerButton = document.getElementById('register');
+      var logoutButton = document.getElementById('logout');
+      var adoptButton = document.getElementById('adopt');
+
+      if (loggedInUser) {
+        document.getElementById('loggedInUser').innerText = 'Usuário: ' + loggedInUser.username;
+        document.getElementById('userSection').innerHTML = `
+          <span id="loggedInUser">Usuário: ${loggedInUser.username}</span>
+          <button class="pure-button" onclick="logout()">Logout</button>
+        `;
+        loginButton.style.display = 'none';
+        registerButton.style.display = 'none';
+        logoutButton.style.display = 'inline-block';
+        adoptButton.style.display = 'inline-block';
+      } else {
+        document.getElementById('loggedInUser').innerText = '';
+        document.getElementById('userSection').innerHTML = `
+          <button class="pure-button" onclick="openModal('loginModal')">Login</button>
+          <button class="pure-button" onclick="openModal('registerModal')">Registrar</button>
+        `;
+        loginButton.style.display = 'inline-block';
+        registerButton.style.display = 'inline-block';
+        logoutButton.style.display = 'none';
+        adoptButton.style.display = 'none';
+      }
+    }
+
+    // Evento de envio do formulário de login
+    document.getElementById('loginForm').addEventListener('submit', login);
+
+    // Evento de envio do formulário de registro
+    document.getElementById('registerForm').addEventListener('submit', register);
+
+    // Carregar os itens reportados ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+      refreshReportedList();
+    });
+
+    // Função para atualizar a lista de itens reportados na página
+    function refreshReportedList() {
+      var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+      var reportedList = document.getElementById('reported-list');
+      reportedList.innerHTML = ''; // Limpa a lista antes de recriá-la
+
+      if (savedItems.length > 0) {
+        savedItems.forEach(function(item, index) {
+          var listItem = document.createElement('li');
+          listItem.innerHTML = `
+            <h3>Item ${index + 1}</h3>
+            <pre>${item.address}</pre>
+            <pre>${item.description}</pre>
+            <div>Status: <span id="status-${index}">${item.status}</span></div>
+            <button class="pure-button edit-button" onclick="editItem(${index})">Editar</button>
+            <button class="pure-button delete-button" onclick="deleteItem(${index})">Excluir</button>
+            <button class="pure-button update-status-button" onclick="updateStatus(${index})">Atualizar Status</button>
+            <button class="pure-button adopt-button" onclick="adoptItem(${index})">Adotar</button>
+          `;
+          reportedList.appendChild(listItem);
+        });
+      } else {
+        var noItemsMessage = document.createElement('p');
+        noItemsMessage.textContent = 'Nenhum item reportado encontrado.';
+        reportedList.appendChild(noItemsMessage);
+      }
+    }
+
+    // Função para salvar dados no localStorage
+    function saveToLocalStorage(data) {
+      var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+      savedItems.push(data);
+      localStorage.setItem('savedItems', JSON.stringify(savedItems));
+      console.log('Dados salvos:', data);
+      alert('Endereço e descrição salvos com sucesso!');
+
+      refreshReportedList(); // Atualiza a lista de reportados na página
+    }
+
+    // Evento de clique no botão de salvar
+    document.getElementById('btnSalvar').addEventListener('click', function() {
+      var loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+      if (!loggedInUser) {
+        alert('Faça login para salvar o endereço e a descrição.');
+        return;
+      }
+      
+      var description = document.getElementById('description').value.trim();
+      if (description) {
+        var dataToSave = {
+          address: 'Endereço não disponível', // Pode ser preenchido se necessário
+          description: description,
+          status: 'Aguardando'
+        };
+        saveToLocalStorage(dataToSave);
+      } else {
+        console.error('Preencha a descrição antes de salvar.');
+        alert('Preencha a descrição antes de salvar.');
+      }
+    });
+
+    // Função para editar um item reportado
+    function editItem(index) {
+      var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+      var itemToEdit = savedItems[index];
+
+      var newDescription = prompt('Editar descrição:', itemToEdit.description);
+      if (newDescription !== null) {
+        itemToEdit.description = newDescription.trim();
+        savedItems[index] = itemToEdit;
+        localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        refreshReportedList();
+        alert('Descrição editada com sucesso!');
+      }
+    }
+
+    // Função para excluir um item reportado
+    function deleteItem(index) {
+      var confirmDelete = confirm('Tem certeza que deseja excluir este item reportado?');
+      if (confirmDelete) {
+        var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+        savedItems.splice(index, 1);
+        localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        refreshReportedList();
+        alert('Item reportado excluído com sucesso!');
+      }
+    }
+
+    // Função para atualizar o status de um item reportado
+    function updateStatus(index) {
+      var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+      var itemToUpdate = savedItems[index];
+
+      var newStatus = prompt('Atualize o status:', itemToUpdate.status);
+      if (newStatus !== null) {
+        itemToUpdate.status = newStatus.trim();
+        savedItems[index] = itemToUpdate;
+        localStorage.setItem('savedItems', JSON.stringify(savedItems));
+        refreshReportedList();
+        alert('Status atualizado com sucesso!');
+      }
+    }
+
+    // Função para adotar um item reportado
+    function adoptItem(index) {
+      var savedItems = JSON.parse(localStorage.getItem('savedItems')) || [];
+      var adoptedItems = JSON.parse(localStorage.getItem('adoptedItems')) || [];
+
+      var itemToAdopt = savedItems[index];
+      adoptedItems.push(itemToAdopt);
+      localStorage.setItem('adoptedItems', JSON.stringify(adoptedItems));
+
+      savedItems.splice(index, 1); // Remove o item da lista de reportados
+      localStorage.setItem('savedItems', JSON.stringify(savedItems));
+
+      refreshReportedList(); // Atualiza a lista de reportados na página
+      alert('Item adotado com sucesso!');
+    }
+  </script>
+</body>
+</html>
